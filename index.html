@@ -1,43 +1,315 @@
 <!doctype html>
-<html lang="de"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Fahrtenbuch</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.wrap{max-width:760px;margin:auto;padding:16px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;margin-bottom:12px}
-h1{margin:5px 0 14px}.grid,.buttons,.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-input,select,textarea{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:12px;font:inherit;margin-top:5px}textarea{min-height:70px}
-label,.muted{font-size:13px;color:#6b7280}button{border:0;border-radius:14px;padding:15px 8px;min-height:56px;font-weight:800;background:#111827;color:#fff}
-.secondary{background:#374151}.danger{background:#b91c1c}.light{background:#e5e7eb;color:#111827}.status{text-align:center;font-size:18px;font-weight:800}
-.metric{background:#fafafa;border:1px solid #e5e7eb;border-radius:12px;padding:10px}.metric small{display:block;color:#6b7280}.metric strong{font-size:18px}
-.entry{padding:10px 0;border-top:1px solid #e5e7eb}.hidden{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;margin-bottom:12px}
+h1{margin:5px 0 14px}
+.grid,.buttons,.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input,select,textarea{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:12px;font:inherit;margin-top:5px}
+textarea{min-height:70px}
+label,.muted{font-size:13px;color:#6b7280}
+button{border:0;border-radius:14px;padding:15px 8px;min-height:56px;font-weight:800;background:#111827;color:#fff}
+.secondary{background:#374151}.danger{background:#b91c1c}.light{background:#e5e7eb;color:#111827}
+.status{text-align:center;font-size:18px;font-weight:800}
+.metric{background:#fafafa;border:1px solid #e5e7eb;border-radius:12px;padding:10px}
+.metric small{display:block;color:#6b7280}.metric strong{font-size:18px}
+.entry{padding:10px 0;border-top:1px solid #e5e7eb}
+.hidden{display:none!important}
 @media(max-width:520px){.grid,.buttons,.totals{grid-template-columns:1fr}}
-</style></head><body><div class="wrap"><h1>Fahrtenbuch</h1>
-<div id="loginCard" class="card"><b>Fahrer-Login</b>
-<label><br>E-Mail<input id="email" type="email"></label><label><br>Passwort<input id="password" type="password"></label>
-<button id="login" style="width:100%;margin-top:12px">ANMELDEN</button><div id="msg" class="muted" style="margin-top:8px"></div></div>
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Fahrtenbuch</h1>
+
+<div id="loginCard" class="card">
+  <b>Fahrer-Login</b>
+  <label><br>E-Mail<input id="email" type="email" autocomplete="username"></label>
+  <label><br>Passwort<input id="password" type="password" autocomplete="current-password"></label>
+  <button id="login" style="width:100%;margin-top:12px">ANMELDEN</button>
+  <div id="msg" class="muted" style="margin-top:8px"></div>
+</div>
+
 <div id="app" class="hidden">
-<div class="card grid"><label>Fahrer<input id="driver" readonly></label><label>Fahrzeug<select id="vehicle"><option value="">Fahrzeug wählen…</option></select></label></div>
-<div class="card"><div id="status" class="status">Bereit</div></div>
-<div class="card buttons"><button id="startDay">ARBEITSBEGINN</button><button id="drive">FAHRT STARTEN</button><button id="pause" class="secondary">PAUSE STARTEN</button><button id="other" class="secondary">SONSTIGE ARBEIT</button><button id="endDay" class="danger">FEIERABEND</button><button id="logout" class="light">ABMELDEN</button></div>
-<div class="card"><label>Bemerkung<textarea id="note" placeholder="Optional"></textarea></label></div>
-<div class="card totals"><div class="metric"><small>Arbeitszeit</small><strong id="work">0 h 00 min</strong></div><div class="metric"><small>Fahrzeit</small><strong id="dr">0 h 00 min</strong></div><div class="metric"><small>Pause</small><strong id="pa">0 h 00 min</strong></div><div class="metric"><small>Sonstige Arbeit</small><strong id="ot">0 h 00 min</strong></div></div>
-<div class="card"><b>Einträge des aktuellen Arbeitstags</b><div id="entries" class="muted">Noch keine.</div></div></div></div>
+  <div class="card grid">
+    <label>Fahrer<input id="driver" readonly></label>
+    <label>Fahrzeug
+      <select id="vehicle"><option value="">Fahrzeug wählen…</option></select>
+    </label>
+  </div>
+
+  <div class="card"><div id="status" class="status">Bereit</div></div>
+
+  <div class="card buttons">
+    <button id="startDay">ARBEITSBEGINN</button>
+    <button id="drive">FAHRT STARTEN</button>
+    <button id="pause" class="secondary">PAUSE STARTEN</button>
+    <button id="other" class="secondary">SONSTIGE ARBEIT</button>
+    <button id="endDay" class="danger">FEIERABEND</button>
+    <button id="logout" class="light">ABMELDEN</button>
+  </div>
+
+  <div class="card">
+    <label>Bemerkung<textarea id="note" placeholder="Optional"></textarea></label>
+  </div>
+
+  <div class="card totals">
+    <div class="metric"><small>Arbeitszeit</small><strong id="work">0 h 00 min</strong></div>
+    <div class="metric"><small>Fahrzeit</small><strong id="dr">0 h 00 min</strong></div>
+    <div class="metric"><small>Pause</small><strong id="pa">0 h 00 min</strong></div>
+    <div class="metric"><small>Sonstige Arbeit</small><strong id="ot">0 h 00 min</strong></div>
+  </div>
+
+  <div class="card">
+    <b>Einträge des aktuellen Arbeitstags</b>
+    <div id="entries" class="muted">Noch keine.</div>
+  </div>
+</div>
+</div>
+
 <script>
-const U="https://ykqfpytepnumgjfpdzix.supabase.co",K="sb_publishable_EE3kx2QEQ9IsyEz4xxvFjw_aMJQiUwO"; let S=JSON.parse(localStorage.getItem("fb_s")||"null"),P=null,W=null,A=null,L=[];
-const $=x=>document.querySelector(x), now=()=>new Date().toISOString(), D=x=>new Date(x), p=n=>String(n).padStart(2,"0");
-const tm=x=>{let q=D(x);return p(q.getHours())+":"+p(q.getMinutes())+":"+p(q.getSeconds())}, mn=(a,b)=>Math.max(0,(D(b)-D(a))/60000), hm=m=>{m=Math.round(+m||0);return Math.floor(m/60)+" h "+p(m%60)+" min"};
-async function req(path,opt={}){let r=await fetch(U+"/rest/v1/"+path,{...opt,headers:{apikey:K,Authorization:"Bearer "+S.access_token,"Content-Type":"application/json",Prefer:"return=representation",...(opt.headers||{})}});if(!r.ok)throw Error(await r.text());let t=await r.text();return t?JSON.parse(t):null}
-async function login(){try{$("#msg").textContent="Anmeldung…";let r=await fetch(U+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:K,"Content-Type":"application/json"},body:JSON.stringify({email:$("#email").value.trim(),password:$("#password").value})});let x=await r.json();if(!r.ok)throw Error(x.msg||x.error_description||"Login fehlgeschlagen");S=x;localStorage.setItem("fb_s",JSON.stringify(S));await init()}catch(e){$("#msg").textContent=e.message}}
-async function init(){if(!S?.access_token)return;try{let q=await req("profiles?id=eq."+S.user.id+"&select=*");if(!q.length){P={id:S.user.id,full_name:S.user.email,role:"driver"};await req("profiles",{method:"POST",body:JSON.stringify(P)})}else P=q[0];$("#driver").value=P.full_name;let v=await req("vehicles?active=eq.true&select=*&order=name");$("#vehicle").innerHTML='<option value="">Fahrzeug wählen…</option>'+v.map(x=>'<option value="'+x.id+'">'+x.name+(x.license_plate?" · "+x.license_plate:"")+"</option>").join("");$("#loginCard").classList.add("hidden");$("#app").classList.remove("hidden");await reload()}catch(e){$("#msg").textContent="Verbindung: "+e.message;localStorage.removeItem("fb_s");S=null}}
-async function reload(){let q=await req("workdays?user_id=eq."+S.user.id+"&ended_at=is.null&select=*&order=started_at.desc&limit=1");W=q[0]||null;L=W?await req("activities?workday_id=eq."+W.id+"&select=*&order=started_at"):[];render()}
-async function startDay(){if(W)return alert("Arbeitstag läuft bereits.");if(!$("#vehicle").value)return alert("Bitte Fahrzeug wählen.");let x=await req("workdays",{method:"POST",body:JSON.stringify({user_id:S.user.id,vehicle_id:$("#vehicle").value,started_at:now()})});W=x[0];L=[];render()}
-async function stop(){if(!A)return;let e=now(),x=await req("activities",{method:"POST",body:JSON.stringify({workday_id:W.id,user_id:S.user.id,activity_type:A.type,started_at:A.started_at,ended_at:e,note:$("#note").value.trim()})});L.push(x[0]);A=null;$("#note").value="";render()}
-async function tog(t){if(!W)return alert("Bitte zuerst ARBEITSBEGINN.");if(!A){A={type:t,started_at:now()};return render()}if(A.type===t)return stop();await stop();A={type:t,started_at:now()};render()}
-async function end(){if(!W)return alert("Kein Arbeitstag aktiv.");if(!confirm("Arbeitstag wirklich beenden?"))return;if(A)await stop();await req("workdays?id=eq."+W.id,{method:"PATCH",body:JSON.stringify({ended_at:now()})});W=null;L=[];render()}
-function render(){let dr=0,pa=0,ot=0;L.forEach(x=>{let m=mn(x.started_at,x.ended_at);if(x.activity_type==="Fahrt")dr+=m;if(x.activity_type==="Pause")pa+=m;if(x.activity_type==="Sonstige Arbeit")ot+=m});if(A){let m=mn(A.started_at,now());if(A.type==="Fahrt")dr+=m;if(A.type==="Pause")pa+=m;if(A.type==="Sonstige Arbeit")ot+=m}let work=W?Math.max(0,mn(W.started_at,now())-pa):0;$("#work").textContent=hm(work);$("#dr").textContent=hm(dr);$("#pa").textContent=hm(pa);$("#ot").textContent=hm(ot);$("#status").textContent=A?A.type+" läuft seit "+tm(A.started_at):W?"Arbeitstag läuft seit "+tm(W.started_at):"Bereit";$("#drive").textContent=A?.type==="Fahrt"?"FAHRT STOPPEN":"FAHRT STARTEN";$("#pause").textContent=A?.type==="Pause"?"PAUSE STOPPEN":"PAUSE STARTEN";$("#other").textContent=A?.type==="Sonstige Arbeit"?"SONSTIGE ARBEIT STOPPEN":"SONSTIGE ARBEIT";$("#entries").innerHTML=L.length?L.map(x=>'<div class="entry"><b>'+x.activity_type+"</b> · "+tm(x.started_at)+"–"+tm(x.ended_at)+" · "+hm(mn(x.started_at,x.ended_at))+"</div>").join(""):"Noch keine."}
-$("#login").onclick=login;$("#startDay").onclick=startDay;$("#drive").onclick=()=>tog("Fahrt");$("#pause").onclick=()=>tog("Pause");$("#other").onclick=()=>tog("Sonstige Arbeit");$("#endDay").onclick=end;$("#logout").onclick=()=>{localStorage.removeItem("fb_s");location.reload()};setInterval(()=>{if(W)render()},1000);init();
-if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
-</script></body></html>
+const U="https://ykqfpytepnumgjfpdzix.supabase.co", K="sb_publishable_EE3kx2QEQ9IsyEz4xxvFjw_aMJQiUwO";
+let S=JSON.parse(localStorage.getItem("fb_s")||"null");
+let P=null, W=null, A=null, L=[];
+
+const $=x=>document.querySelector(x);
+const now=()=>new Date().toISOString();
+const D=x=>new Date(x);
+const p=n=>String(n).padStart(2,"0");
+const tm=x=>{let q=D(x);return p(q.getHours())+":"+p(q.getMinutes())+":"+p(q.getSeconds())};
+const mn=(a,b)=>Math.max(0,(D(b)-D(a))/60000);
+const hm=m=>{m=Math.round(+m||0);return Math.floor(m/60)+" h "+p(m%60)+" min"};
+
+async function req(path,opt={}){
+  let r=await fetch(U+"/rest/v1/"+path,{
+    ...opt,
+    headers:{
+      apikey:K,
+      Authorization:"Bearer "+S.access_token,
+      "Content-Type":"application/json",
+      Prefer:"return=representation",
+      ...(opt.headers||{})
+    }
+  });
+  if(!r.ok) throw Error(await r.text());
+  let t=await r.text();
+  return t?JSON.parse(t):null;
+}
+
+async function login(){
+  try{
+    $("#msg").textContent="Anmeldung…";
+    let r=await fetch(U+"/auth/v1/token?grant_type=password",{
+      method:"POST",
+      headers:{apikey:K,"Content-Type":"application/json"},
+      body:JSON.stringify({email:$("#email").value.trim(),password:$("#password").value})
+    });
+    let x=await r.json();
+    if(!r.ok) throw Error(x.msg||x.error_description||"Login fehlgeschlagen");
+    S=x;
+    localStorage.setItem("fb_s",JSON.stringify(S));
+    await init();
+  }catch(e){$("#msg").textContent=e.message}
+}
+
+async function init(){
+  if(!S?.access_token) return;
+  try{
+    let q=await req("profiles?id=eq."+S.user.id+"&select=*");
+    if(!q.length){
+      P={id:S.user.id,full_name:S.user.email,role:"driver"};
+      await req("profiles",{method:"POST",body:JSON.stringify(P)});
+    } else P=q[0];
+
+    $("#driver").value=P.full_name;
+
+    let v=await req("vehicles?active=eq.true&select=*&order=name");
+    $("#vehicle").innerHTML='<option value="">Fahrzeug wählen…</option>'+
+      v.map(x=>'<option value="'+x.id+'">'+x.name+(x.license_plate?" · "+x.license_plate:"")+"</option>").join("");
+
+    $("#loginCard").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    await reload();
+  }catch(e){
+    $("#msg").textContent="Verbindung: "+e.message;
+    localStorage.removeItem("fb_s");
+    S=null;
+  }
+}
+
+async function reload(){
+  let q=await req("workdays?user_id=eq."+S.user.id+"&ended_at=is.null&select=*&order=started_at.desc&limit=1");
+  W=q[0]||null;
+  L=[];
+  A=null;
+
+  if(W){
+    L=await req("activities?workday_id=eq."+W.id+"&select=*&order=started_at");
+
+    const running=L.find(x=>x.ended_at===null);
+    if(running){
+      A=running;
+    }
+
+    if(W.vehicle_id){
+      $("#vehicle").value=W.vehicle_id;
+    }
+  }
+  render();
+}
+
+async function startDay(){
+  if(W) return alert("Arbeitstag läuft bereits.");
+  if(!$("#vehicle").value) return alert("Bitte Fahrzeug wählen.");
+
+  let x=await req("workdays",{
+    method:"POST",
+    body:JSON.stringify({
+      user_id:S.user.id,
+      vehicle_id:$("#vehicle").value,
+      started_at:now()
+    })
+  });
+
+  W=x[0];
+  L=[];
+  A=null;
+  render();
+}
+
+async function startActivity(type){
+  if(!W) return alert("Bitte zuerst ARBEITSBEGINN.");
+
+  const started=now();
+
+  let x=await req("activities",{
+    method:"POST",
+    body:JSON.stringify({
+      workday_id:W.id,
+      user_id:S.user.id,
+      activity_type:type,
+      started_at:started,
+      ended_at:null,
+      note:$("#note").value.trim()
+    })
+  });
+
+  A=x[0];
+  L.push(A);
+  render();
+}
+
+async function stopActivity(){
+  if(!A) return;
+
+  const ended=now();
+
+  let x=await req("activities?id=eq."+A.id,{
+    method:"PATCH",
+    body:JSON.stringify({
+      ended_at:ended,
+      note:$("#note").value.trim()
+    })
+  });
+
+  const updated=x[0];
+  L=L.map(r=>r.id===updated.id?updated:r);
+  A=null;
+  $("#note").value="";
+  render();
+}
+
+async function toggle(type){
+  if(!W) return alert("Bitte zuerst ARBEITSBEGINN.");
+  if(!A) return startActivity(type);
+
+  if(A.activity_type===type) return stopActivity();
+
+  await stopActivity();
+  await startActivity(type);
+}
+
+async function endDay(){
+  if(!W) return alert("Kein Arbeitstag aktiv.");
+  if(!confirm("Arbeitstag wirklich beenden?")) return;
+
+  if(A) await stopActivity();
+
+  await req("workdays?id=eq."+W.id,{
+    method:"PATCH",
+    body:JSON.stringify({ended_at:now()})
+  });
+
+  W=null;
+  A=null;
+  L=[];
+  render();
+}
+
+function render(){
+  let dr=0,pa=0,ot=0;
+
+  L.forEach(x=>{
+    let end=x.ended_at || now();
+    let m=mn(x.started_at,end);
+
+    if(x.activity_type==="Fahrt") dr+=m;
+    if(x.activity_type==="Pause") pa+=m;
+    if(x.activity_type==="Sonstige Arbeit") ot+=m;
+  });
+
+  let work=W?Math.max(0,mn(W.started_at,now())-pa):0;
+
+  $("#work").textContent=hm(work);
+  $("#dr").textContent=hm(dr);
+  $("#pa").textContent=hm(pa);
+  $("#ot").textContent=hm(ot);
+
+  $("#status").textContent=A
+    ? A.activity_type+" läuft seit "+tm(A.started_at)
+    : W ? "Arbeitstag läuft seit "+tm(W.started_at) : "Bereit";
+
+  $("#drive").textContent=A?.activity_type==="Fahrt"?"FAHRT STOPPEN":"FAHRT STARTEN";
+  $("#pause").textContent=A?.activity_type==="Pause"?"PAUSE STOPPEN":"PAUSE STARTEN";
+  $("#other").textContent=A?.activity_type==="Sonstige Arbeit"?"SONSTIGE ARBEIT STOPPEN":"SONSTIGE ARBEIT";
+
+  $("#entries").innerHTML=L.length
+    ? L.map(x=>{
+        const end=x.ended_at || now();
+        return '<div class="entry"><b>'+x.activity_type+
+          (x.ended_at?"":" (läuft)")+
+          "</b> · "+tm(x.started_at)+"–"+(x.ended_at?tm(x.ended_at):"…")+
+          " · "+hm(mn(x.started_at,end))+
+          (x.note?'<div class="muted">'+x.note+"</div>":"")+
+          "</div>";
+      }).join("")
+    : "Noch keine.";
+}
+
+$("#login").onclick=login;
+$("#startDay").onclick=startDay;
+$("#drive").onclick=()=>toggle("Fahrt");
+$("#pause").onclick=()=>toggle("Pause");
+$("#other").onclick=()=>toggle("Sonstige Arbeit");
+$("#endDay").onclick=endDay;
+$("#logout").onclick=()=>{localStorage.removeItem("fb_s");location.reload()};
+
+setInterval(()=>{if(W)render()},1000);
+init();
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
