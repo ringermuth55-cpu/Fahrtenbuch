@@ -1,232 +1,81 @@
-<!doctype html>
-<html lang="de">
-<head>
-<meta charset="utf-8">
+<!doctype html><html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827">
 <title>Fahrtenbuch Admin</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.wrap{max-width:1100px;margin:auto;padding:16px}
-.card{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:14px;margin-bottom:12px}
-h1{margin:5px 0 14px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:12px;font:inherit;margin-top:5px}
-label,.muted{font-size:13px;color:#6b7280}
-button{border:0;border-radius:12px;padding:13px 14px;font-weight:800;background:#111827;color:#fff}
-button.light{background:#e5e7eb;color:#111827}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.metric{background:#fafafa;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
-.metric small{display:block;color:#6b7280}.metric strong{font-size:20px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
-th{background:#f9fafb;position:sticky;top:0}
-.tablewrap{overflow:auto;max-height:520px;border:1px solid #e5e7eb;border-radius:12px}
-.hidden{display:none!important}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:760px){.grid,.metrics{grid-template-columns:1fr 1fr}}
-@media(max-width:520px){.grid,.metrics{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div class="wrap">
-<h1>Fahrtenbuch Admin</h1>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f3f4f6;color:#111827;margin:0}
+.wrap{max-width:1100px;margin:auto;padding:16px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:12px;margin-top:5px;box-sizing:border-box}
+button{border:0;border-radius:12px;padding:13px 14px;font-weight:800;background:#111827;color:white;margin:4px}.light{background:#e5e7eb;color:#111827}
+.metric{background:#fafafa;border:1px solid #e5e7eb;border-radius:12px;padding:12px}.metric small{display:block;color:#6b7280}.metric strong{font-size:20px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left}
+.tablewrap{overflow:auto;max-height:520px}.hidden{display:none}.muted{font-size:13px;color:#6b7280}
+@media(max-width:700px){.grid,.metrics{grid-template-columns:1fr 1fr}}@media(max-width:500px){.grid,.metrics{grid-template-columns:1fr}}
+</style></head><body><div class="wrap"><h1>Fahrtenbuch Admin</h1>
 
 <div id="loginCard" class="card">
-  <b>Admin-Login</b>
-  <label><br>E-Mail<input id="email" type="email"></label>
-  <label><br>Passwort<input id="password" type="password"></label>
-  <button id="login" style="width:100%;margin-top:12px">ANMELDEN</button>
-  <div id="msg" class="muted" style="margin-top:8px"></div>
+<b>Admin-Login</b><br><br>
+<input id="email" type="email" placeholder="E-Mail"><br><br>
+<input id="password" type="password" placeholder="Passwort"><br><br>
+<button id="login">ANMELDEN</button><div id="msg" class="muted"></div>
 </div>
 
 <div id="admin" class="hidden">
-  <div class="card">
-    <div class="grid">
-      <label>Von<input id="from" type="date"></label>
-      <label>Bis<input id="to" type="date"></label>
-      <label>Fahrer<select id="driver"><option value="">Alle Fahrer</option></select></label>
-      <label>Fahrzeug<select id="vehicle"><option value="">Alle Fahrzeuge</option></select></label>
-    </div>
-    <div class="actions" style="margin-top:12px">
-      <button id="apply">FILTER ANWENDEN</button>
-      <button id="exportCsv" class="light">EXCEL/CSV EXPORT</button>
-      <button id="logout" class="light">ABMELDEN</button>
-    </div>
-  </div>
-
-  <div class="card metrics">
-    <div class="metric"><small>Arbeitszeit</small><strong id="mWork">0 h 00 min</strong></div>
-    <div class="metric"><small>Fahrzeit</small><strong id="mDrive">0 h 00 min</strong></div>
-    <div class="metric"><small>Pause</small><strong id="mPause">0 h 00 min</strong></div>
-    <div class="metric"><small>Sonstige Arbeit</small><strong id="mOther">0 h 00 min</strong></div>
-  </div>
-
-  <div class="card">
-    <b>Arbeitstage & Tätigkeiten</b>
-    <div class="tablewrap" style="margin-top:10px">
-      <table>
-        <thead>
-          <tr>
-            <th>Datum</th><th>Fahrer</th><th>Fahrzeug</th><th>Arbeitsbeginn</th><th>Arbeitsende</th>
-            <th>Typ</th><th>Beginn</th><th>Ende</th><th>Dauer</th><th>Bemerkung</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card">
+<div class="grid">
+<label>Von<input id="from" type="date"></label>
+<label>Bis<input id="to" type="date"></label>
+<label>Fahrer<select id="driver"><option value="">Alle Fahrer</option></select></label>
+<label>Fahrzeug<select id="vehicle"><option value="">Alle Fahrzeuge</option></select></label>
 </div>
+<br><button id="apply">FILTER ANWENDEN</button>
+<button id="exportXlsx" class="light">EXCEL (.XLSX) EXPORT</button>
+<button id="logout" class="light">ABMELDEN</button>
+<div id="exportMsg" class="muted"></div>
 </div>
+
+<div class="card metrics">
+<div class="metric"><small>Arbeitszeit</small><strong id="mWork">0 h 00 min</strong></div>
+<div class="metric"><small>Fahrzeit</small><strong id="mDrive">0 h 00 min</strong></div>
+<div class="metric"><small>Pause</small><strong id="mPause">0 h 00 min</strong></div>
+<div class="metric"><small>Sonstige Arbeit</small><strong id="mOther">0 h 00 min</strong></div>
+</div>
+
+<div class="card"><b>Arbeitstage & Tätigkeiten</b><div class="tablewrap"><table>
+<thead><tr><th>Datum</th><th>Fahrer</th><th>Fahrzeug</th><th>Arbeitsbeginn</th><th>Arbeitsende</th><th>Typ</th><th>Beginn</th><th>Ende</th><th>Dauer</th><th>Bemerkung</th></tr></thead>
+<tbody id="rows"></tbody></table></div></div>
+</div></div>
 
 <script>
-const U="https://ykqfpytepnumgjfpdzix.supabase.co",K="sb_publishable_EE3kx2QEQ9IsyEz4xxvFjw_aMJQiUwO";
-let S=JSON.parse(localStorage.getItem("fb_admin_s")||"null");
-let profiles=[],vehicles=[],workdays=[],activities=[];
-
-const $=x=>document.querySelector(x);
-const D=x=>new Date(x);
-const pad=n=>String(n).padStart(2,"0");
+const U="https://ykqfpytepnumgjfpdzix.supabase.co";
+const K="sb_publishable_EE3kx2QEQ9IsyEz4xxvFjw_aMJQiUwO";
+let S=JSON.parse(localStorage.getItem("fb_admin_s")||"null"),profiles=[],vehicles=[],workdays=[],activities=[];
+const $=x=>document.querySelector(x),D=x=>new Date(x),pad=n=>String(n).padStart(2,"0");
 const tm=x=>x?`${pad(D(x).getHours())}:${pad(D(x).getMinutes())}:${pad(D(x).getSeconds())}`:"";
 const dm=x=>x?`${pad(D(x).getDate())}.${pad(D(x).getMonth()+1)}.${D(x).getFullYear()}`:"";
 const mins=(a,b)=>a&&b?Math.max(0,(D(b)-D(a))/60000):0;
 const hm=m=>{m=Math.round(+m||0);return `${Math.floor(m/60)} h ${pad(m%60)} min`};
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-
-async function req(path,opt={}){
-  const r=await fetch(U+"/rest/v1/"+path,{...opt,headers:{apikey:K,Authorization:"Bearer "+S.access_token,"Content-Type":"application/json",Prefer:"return=representation",...(opt.headers||{})}});
-  if(!r.ok) throw Error(await r.text());
-  const t=await r.text(); return t?JSON.parse(t):null;
-}
-
-async function login(){
-  try{
-    $("#msg").textContent="Anmeldung…";
-    const r=await fetch(U+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:K,"Content-Type":"application/json"},body:JSON.stringify({email:$("#email").value.trim(),password:$("#password").value})});
-    const x=await r.json(); if(!r.ok) throw Error(x.msg||x.error_description||"Login fehlgeschlagen");
-    S=x; localStorage.setItem("fb_admin_s",JSON.stringify(S)); await init();
-  }catch(e){$("#msg").textContent=e.message}
-}
-
-async function init(){
-  if(!S?.access_token)return;
-  try{
-    const me=await req("profiles?id=eq."+S.user.id+"&select=*");
-    if(!me.length || me[0].role!=="admin") throw Error("Dieses Konto hat keine Admin-Rechte.");
-    $("#loginCard").classList.add("hidden"); $("#admin").classList.remove("hidden");
-
-    profiles=await req("profiles?select=id,full_name,role&order=full_name");
-    vehicles=await req("vehicles?select=id,name,license_plate,active&order=name");
-
-    $("#driver").innerHTML='<option value="">Alle Fahrer</option>'+profiles.map(p=>`<option value="${p.id}">${esc(p.full_name)}</option>`).join("");
-    $("#vehicle").innerHTML='<option value="">Alle Fahrzeuge</option>'+vehicles.map(v=>`<option value="${v.id}">${esc(v.name)}${v.license_plate?" · "+esc(v.license_plate):""}</option>`).join("");
-
-    const d=new Date(), first=new Date(d.getFullYear(),d.getMonth(),1);
-    $("#from").value=first.toISOString().slice(0,10);
-    $("#to").value=d.toISOString().slice(0,10);
-    await loadData();
-  }catch(e){
-    $("#msg").textContent=e.message;
-    $("#loginCard").classList.remove("hidden");
-    $("#admin").classList.add("hidden");
-  }
-}
-
-async function loadData(){
-  const from=$("#from").value, to=$("#to").value;
-  const drv=$("#driver").value, veh=$("#vehicle").value;
-
-  let q="workdays?select=*&started_at=gte."+encodeURIComponent(from+"T00:00:00")+"&started_at=lte."+encodeURIComponent(to+"T23:59:59")+"&order=started_at";
-  if(drv) q+="&user_id=eq."+drv;
-  if(veh) q+="&vehicle_id=eq."+veh;
-  workdays=await req(q);
-
-  const ids=workdays.map(w=>w.id);
-  activities=[];
-  if(ids.length){
-    activities=await req("activities?select=*&workday_id=in.("+ids.join(",")+")&order=started_at");
-  }
-  render();
-}
-
-function render(){
-  let tWork=0,tDrive=0,tPause=0,tOther=0;
-  const profileMap=Object.fromEntries(profiles.map(p=>[p.id,p]));
-  const vehicleMap=Object.fromEntries(vehicles.map(v=>[v.id,v]));
-  const rows=[];
-
-  for(const w of workdays){
-    const acts=activities.filter(a=>a.workday_id===w.id);
-    const pause=acts.filter(a=>a.activity_type==="Pause").reduce((s,a)=>s+mins(a.started_at,a.ended_at||new Date().toISOString()),0);
-    const gross=w.ended_at?mins(w.started_at,w.ended_at):0;
-    if(w.ended_at) tWork+=Math.max(0,gross-pause);
-
-    if(!acts.length){
-      rows.push({w,a:null});
-    } else {
-      for(const a of acts){
-        const m=mins(a.started_at,a.ended_at||new Date().toISOString());
-        if(a.activity_type==="Fahrt")tDrive+=m;
-        if(a.activity_type==="Pause")tPause+=m;
-        if(a.activity_type==="Sonstige Arbeit")tOther+=m;
-        rows.push({w,a});
-      }
-    }
-  }
-
-  $("#mWork").textContent=hm(tWork); $("#mDrive").textContent=hm(tDrive); $("#mPause").textContent=hm(tPause); $("#mOther").textContent=hm(tOther);
-
-  $("#rows").innerHTML=rows.map(({w,a})=>{
-    const p=profileMap[w.user_id],v=vehicleMap[w.vehicle_id];
-    return `<tr>
-      <td>${dm(w.started_at)}</td>
-      <td>${esc(p?.full_name||w.user_id)}</td>
-      <td>${esc(v?(v.name+(v.license_plate?" · "+v.license_plate:"")):"")}</td>
-      <td>${tm(w.started_at)}</td>
-      <td>${tm(w.ended_at)}</td>
-      <td>${esc(a?.activity_type||"")}</td>
-      <td>${tm(a?.started_at)}</td>
-      <td>${tm(a?.ended_at)}</td>
-      <td>${a?hm(mins(a.started_at,a.ended_at||new Date().toISOString())):""}</td>
-      <td>${esc(a?.note||"")}</td>
-    </tr>`;
-  }).join("");
-}
-
-function csvEscape(v){v=String(v??"");if(/[;"\n]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v}
-function exportCsv(){
-  const profileMap=Object.fromEntries(profiles.map(p=>[p.id,p]));
-  const vehicleMap=Object.fromEntries(vehicles.map(v=>[v.id,v]));
-  const head=["Datum","Fahrer","Fahrzeug","Arbeitsbeginn","Arbeitsende","Typ","Beginn","Ende","Dauer_Minuten","Bemerkung"];
-  const lines=[head.join(";")];
-  for(const w of workdays){
-    const acts=activities.filter(a=>a.workday_id===w.id);
-    const arr=acts.length?acts:[null];
-    for(const a of arr){
-      const p=profileMap[w.user_id],v=vehicleMap[w.vehicle_id];
-      const vals=[
-        dm(w.started_at),
-        p?.full_name||w.user_id,
-        v?(v.name+(v.license_plate?" · "+v.license_plate:"")):"",
-        tm(w.started_at),tm(w.ended_at),
-        a?.activity_type||"",
-        tm(a?.started_at),tm(a?.ended_at),
-        a?mins(a.started_at,a.ended_at||new Date().toISOString()).toFixed(1).replace(".",","):"",
-        a?.note||""
-      ];
-      lines.push(vals.map(csvEscape).join(";"));
-    }
-  }
-  const blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`fahrtenbuch_admin_${$("#from").value}_bis_${$("#to").value}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-
-$("#login").onclick=login;
-$("#apply").onclick=loadData;
-$("#exportCsv").onclick=exportCsv;
-$("#logout").onclick=()=>{localStorage.removeItem("fb_admin_s");location.reload()};
-init();
-</script>
-</body>
-</html>
+const h=m=>Math.round((m/60)*100)/100;
+async function req(path,opt={}){let r=await fetch(U+"/rest/v1/"+path,{...opt,headers:{apikey:K,Authorization:"Bearer "+S.access_token,"Content-Type":"application/json",Prefer:"return=representation"}});if(!r.ok)throw Error(await r.text());let t=await r.text();return t?JSON.parse(t):null}
+async function login(){try{let r=await fetch(U+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:K,"Content-Type":"application/json"},body:JSON.stringify({email:$("#email").value.trim(),password:$("#password").value})});let x=await r.json();if(!r.ok)throw Error(x.msg||"Login fehlgeschlagen");S=x;localStorage.setItem("fb_admin_s",JSON.stringify(S));await init()}catch(e){$("#msg").textContent=e.message}}
+async function init(){if(!S)return;let me=await req("profiles?id=eq."+S.user.id+"&select=*");if(!me.length||me[0].role!=="admin"){$("#msg").textContent="Keine Admin-Rechte.";return}
+$("#loginCard").classList.add("hidden");$("#admin").classList.remove("hidden");
+profiles=await req("profiles?select=id,full_name,role&order=full_name");vehicles=await req("vehicles?select=id,name,license_plate,active&order=name");
+$("#driver").innerHTML='<option value="">Alle Fahrer</option>'+profiles.map(p=>`<option value="${p.id}">${p.full_name}</option>`).join("");
+$("#vehicle").innerHTML='<option value="">Alle Fahrzeuge</option>'+vehicles.map(v=>`<option value="${v.id}">${v.name}${v.license_plate?" · "+v.license_plate:""}</option>`).join("");
+let d=new Date(),f=new Date(d.getFullYear(),d.getMonth(),1);$("#from").value=f.toISOString().slice(0,10);$("#to").value=d.toISOString().slice(0,10);await load()}
+async function load(){let q=`workdays?select=*&started_at=gte.${encodeURIComponent($("#from").value+"T00:00:00")}&started_at=lte.${encodeURIComponent($("#to").value+"T23:59:59")}&order=started_at`;
+if($("#driver").value)q+="&user_id=eq."+$("#driver").value;if($("#vehicle").value)q+="&vehicle_id=eq."+$("#vehicle").value;workdays=await req(q);
+let ids=workdays.map(w=>w.id);activities=ids.length?await req("activities?select=*&workday_id=in.("+ids.join(",")+")&order=started_at"):[];render()}
+function maps(){return[{...Object.fromEntries(profiles.map(x=>[x.id,x]))},{...Object.fromEntries(vehicles.map(x=>[x.id,x]))}]}
+function stats(w){let a=activities.filter(x=>x.workday_id===w.id),p=a.filter(x=>x.activity_type==="Pause").reduce((s,x)=>s+mins(x.started_at,x.ended_at||new Date().toISOString()),0),g=w.ended_at?mins(w.started_at,w.ended_at):0;return{a,p,net:w.ended_at?Math.max(0,g-p):0}}
+function render(){let [pm,vm]=maps(),tw=0,td=0,tp=0,to=0,html="";for(let w of workdays){let s=stats(w);tw+=s.net;let arr=s.a.length?s.a:[null];for(let a of arr){if(a){let m=mins(a.started_at,a.ended_at||new Date().toISOString());if(a.activity_type==="Fahrt")td+=m;if(a.activity_type==="Pause")tp+=m;if(a.activity_type==="Sonstige Arbeit")to+=m}
+let p=pm[w.user_id],v=vm[w.vehicle_id];html+=`<tr><td>${dm(w.started_at)}</td><td>${p?.full_name||""}</td><td>${v?(v.name+(v.license_plate?" · "+v.license_plate:"")):""}</td><td>${tm(w.started_at)}</td><td>${tm(w.ended_at)}</td><td>${a?.activity_type||""}</td><td>${tm(a?.started_at)}</td><td>${tm(a?.ended_at)}</td><td>${a?hm(mins(a.started_at,a.ended_at||new Date().toISOString())):""}</td><td>${a?.note||""}</td></tr>`}}
+$("#mWork").textContent=hm(tw);$("#mDrive").textContent=hm(td);$("#mPause").textContent=hm(tp);$("#mOther").textContent=hm(to);$("#rows").innerHTML=html}
+function overview(){let [pm,vm]=maps(),o={};for(let w of workdays){let uid=w.user_id,s=stats(w);if(!o[uid])o[uid]={Fahrer:pm[uid]?.full_name||uid,Arbeitstage:0,Arbeitszeit_Stunden:0,Fahrzeit_Stunden:0,Pause_Stunden:0,Sonstige_Arbeit_Stunden:0,Fahrzeuge:new Set};let r=o[uid];r.Arbeitstage++;r.Arbeitszeit_Stunden+=h(s.net);let v=vm[w.vehicle_id];if(v)r.Fahrzeuge.add(v.name+(v.license_plate?" · "+v.license_plate:""));for(let a of s.a){let m=mins(a.started_at,a.ended_at||new Date().toISOString());if(a.activity_type==="Fahrt")r.Fahrzeit_Stunden+=h(m);if(a.activity_type==="Pause")r.Pause_Stunden+=h(m);if(a.activity_type==="Sonstige Arbeit")r.Sonstige_Arbeit_Stunden+=h(m)}}return Object.values(o).map(r=>({...r,Fahrzeuge:[...r.Fahrzeuge].join(", ")}))}
+function details(){let [pm,vm]=maps(),out=[];for(let w of workdays){let arr=activities.filter(a=>a.workday_id===w.id);if(!arr.length)arr=[null];for(let a of arr){let v=vm[w.vehicle_id];out.push({Datum:dm(w.started_at),Fahrer:pm[w.user_id]?.full_name||w.user_id,Fahrzeug:v?(v.name+(v.license_plate?" · "+v.license_plate:"")):"",Arbeitsbeginn:tm(w.started_at),Arbeitsende:tm(w.ended_at),Tätigkeit:a?.activity_type||"",Beginn:tm(a?.started_at),Ende:tm(a?.ended_at),Dauer_Stunden:a?h(mins(a.started_at,a.ended_at||new Date().toISOString())):"",Bemerkung:a?.note||""})}}return out}
+function widths(ws,rows){if(!rows.length)return;let keys=Object.keys(rows[0]);ws["!cols"]=keys.map(k=>({wch:Math.min(40,Math.max(k.length,...rows.map(r=>String(r[k]??"").length))+2)}))}
+function exportXlsx(){try{if(typeof XLSX==="undefined")throw Error("Excel-Bibliothek nicht geladen");if(!workdays.length)return alert("Keine Daten für diesen Filter.");let ov=overview(),dt=details(),wb=XLSX.utils.book_new(),w1=XLSX.utils.json_to_sheet(ov),w2=XLSX.utils.json_to_sheet(dt);widths(w1,ov);widths(w2,dt);XLSX.utils.book_append_sheet(wb,w1,"Übersicht");XLSX.utils.book_append_sheet(wb,w2,"Detaildaten");XLSX.writeFile(wb,`Fahrtenbuch_${$("#from").value}_bis_${$("#to").value}.xlsx`,{compression:true});$("#exportMsg").textContent="Excel-Datei erstellt."}catch(e){$("#exportMsg").textContent="Export fehlgeschlagen: "+e.message}}
+$("#login").onclick=login;$("#apply").onclick=load;$("#exportXlsx").onclick=exportXlsx;$("#logout").onclick=()=>{localStorage.removeItem("fb_admin_s");location.reload()};init();
+</script></body></html>
